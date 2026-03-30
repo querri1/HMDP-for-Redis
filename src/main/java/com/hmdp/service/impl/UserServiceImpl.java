@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
+import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
+
+import static com.hmdp.utils.SystemConstants.USER_NICK_NAME_PREFIX;
 
 /**
  * <p>
@@ -52,20 +55,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //2.校验验证码
         Object cachecode = session.getAttribute("code");
         String code = loginForm.getCode();
-        if(cachecode == null || cachecode.toString().equals(code)){
+        if(cachecode == null || !cachecode.toString().equals(code)){
             //3.不一致，报错
             return Result.fail("验证码错误！");
 
         }
 
         //4.一致，根据手机号查询用户
+        User user = query().eq("phone", phone).one();
 
         //5.判断用户是否存在
+        if(user == null){
+            //6.不存在，创建新用户并保存
+            user = creatUserWithPhone(phone);
+        }
 
-        //6.不存在，创建新用户并保存
 
         //7.保存用户信息到session
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setNickName(user.getNickName());
+        userDTO.setIcon(user.getIcon());
+        session.setAttribute("user", userDTO);
+        return Result.ok();
+    }
 
-        return null;
+    private User creatUserWithPhone(String phone) {
+        User user = new User();
+        user.setPhone(phone);
+        user.setNickName(USER_NICK_NAME_PREFIX+RandomUtil.randomString(10));
+        save(user);
+        return user;
     }
 }
