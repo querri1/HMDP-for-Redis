@@ -2,6 +2,7 @@ package com.hmdp.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
@@ -39,5 +40,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.debug("发送短信验证码成功，验证码：{}",code);
         //6.返回ok
         return Result.ok();
+    }
+
+    @Override
+    public Result login(LoginFormDTO loginForm, HttpSession session) {
+        //1.校验手机号
+        String phone = loginForm.getPhone();
+        if (RegexUtils.isPhoneInvalid(phone)) {
+            return Result.fail("手机号格式错误！");
+        }
+        //2.校验验证码
+        Object cachecode = session.getAttribute("code");
+        String code = loginForm.getCode();
+        if(cachecode == null || cachecode.toString().equals(code)){
+            //3.不一致，报错
+            return Result.fail("验证码错误！");
+
+        }
+
+        //4.一致，根据手机号查询用户
+
+        //5.判断用户是否存在
+
+        //6.不存在，创建新用户并保存
+
+        //7.保存用户信息到session
+
+        return null;
     }
 }
