@@ -1,0 +1,10 @@
+---@diagnostic disable: undefined-global
+-- 比较线程标识与当前线程标识是否相同，相同则解锁，否则不操作
+
+if(redis.call('get', KEYS[1]) == ARGV[1]) then
+    --释放锁 del key
+    return redis.call('del', KEYS[1])
+end
+return 0
+
+
