@@ -25,7 +25,12 @@ public class UploadController {
             // 生成新文件名
             String fileName = createNewFileName(originalFilename);
             // 保存文件
-            image.transferTo(new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName));
+            File destFile = new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName);
+            File parent = destFile.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                throw new RuntimeException("创建上传目录失败: " + parent.getAbsolutePath());
+            }
+            image.transferTo(destFile);
             // 返回结果
             log.debug("文件上传成功，{}", fileName);
             return Result.ok(fileName);
@@ -53,11 +58,11 @@ public class UploadController {
         int d1 = hash & 0xF;
         int d2 = (hash >> 4) & 0xF;
         // 判断目录是否存在
-        File dir = new File(SystemConstants.IMAGE_UPLOAD_DIR, StrUtil.format("/blogs/{}/{}", d1, d2));
-        if (!dir.exists()) {
-            dir.mkdirs();
+        File dir = new File(SystemConstants.IMAGE_UPLOAD_DIR, StrUtil.format("blogs/{}/{}", d1, d2));
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new RuntimeException("创建上传目录失败: " + dir.getAbsolutePath());
         }
         // 生成文件名
-        return StrUtil.format("/blogs/{}/{}/{}.{}", d1, d2, name, suffix);
+        return StrUtil.format("blogs/{}/{}/{}.{}", d1, d2, name, suffix);
     }
 }
