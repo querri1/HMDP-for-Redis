@@ -7,10 +7,11 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.Shop;
 import com.hmdp.service.IShopService;
 import com.hmdp.utils.SystemConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import javax.annotation.Resource;
-
 /**
  * <p>
  * 前端控制器
@@ -25,6 +26,8 @@ public class  ShopController {
 
     @Resource
     public IShopService shopService;
+    @Autowired
+    private ResourceUrlProvider resourceUrlProvider;
 
     /**
      * 根据id查询商铺信息
@@ -69,14 +72,12 @@ public class  ShopController {
     @GetMapping("/of/type")
     public Result queryShopByType(
             @RequestParam("typeId") Integer typeId,
-            @RequestParam(value = "current", defaultValue = "1") Integer current
-    ) {
-        // 根据类型分页查询
-        Page<Shop> page = shopService.query()
-                .eq("type_id", typeId)
-                .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
-        // 返回数据
-        return Result.ok(page.getRecords());
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam(value = "x", required = false) Double x,
+            @RequestParam(value = "y", required = false) Double y
+
+            ) {
+        return shopService.queryShopByType(typeId, current, x, y);
     }
 
     /**
